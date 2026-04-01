@@ -50,11 +50,11 @@ El proyecto sigue los principios de **Hexagonal Architecture**, separando las pr
 - `DELETE /api/users/{id}` - Eliminar usuario
 
 ### Grupos
-- `POST /api/groups` - Crear grupo
-- `GET /api/groups/{id}` - Obtener grupo por ID
-- `GET /api/groups` - Obtener todos los grupos
-- `PUT /api/groups/{id}` - Actualizar grupo
-- `DELETE /api/groups/{id}` - Eliminar grupo
+- `POST /api/hogares` - Crear grupo
+- `GET /api/hogares/{id}` - Obtener grupo por ID
+- `GET /api/hogares` - Obtener todos los grupos
+- `PUT /api/hogares/{id}` - Actualizar grupo
+- `DELETE /api/hogares/{id}` - Eliminar grupo
 
 ### Tareas
 - `POST /api/tasks` - Crear tarea
@@ -75,14 +75,14 @@ src/
 │   │       ├── SistemaDomesticasApplication.java
 │   │       ├── domain/
 │   │       │   ├── User.java
-│   │       │   ├── Group.java
+│   │       │   ├── Hogar.java
 │   │       │   ├── Task.java
 │   │       │   ├── UserRepository.java
-│   │       │   ├── GroupRepository.java
+│   │       │   ├── HogarRepository.java
 │   │       │   └── TaskRepository.java
 │   │       ├── application/
 │   │       │   ├── UserService.java
-│   │       │   ├── GroupService.java
+│   │       │   ├── CrearHogarService.java
 │   │       │   └── TaskService.java
 │   │       ├── infrastructure/
 │   │       │   ├── JpaUserRepository.java
@@ -90,7 +90,7 @@ src/
 │   │       │   └── JpaTaskRepository.java
 │   │       └── presentation/
 │   │           ├── UserController.java
-│   │           ├── GroupController.java
+│   │           ├── HogarController.java
 │   │           └── TaskController.java
 │   └── resources/
 │       └── application.properties
