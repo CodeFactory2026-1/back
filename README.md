@@ -69,34 +69,54 @@ El proyecto sigue los principios de **Hexagonal Architecture**, separando las pr
 
 ```
 src/
-├── main/
-│   ├── java/
-│   │   └── com/domesticas/
-│   │       ├── SistemaDomesticasApplication.java
-│   │       ├── domain/
-│   │       │   ├── User.java
-│   │       │   ├── Hogar.java
-│   │       │   ├── Task.java
-│   │       │   ├── UserRepository.java
-│   │       │   ├── HogarRepository.java
-│   │       │   └── TaskRepository.java
-│   │       ├── application/
-│   │       │   ├── UserService.java
-│   │       │   ├── CrearHogarService.java
-│   │       │   └── TaskService.java
-│   │       ├── infrastructure/
-│   │       │   ├── JpaUserRepository.java
-│   │       │   ├── JpaGroupRepository.java
-│   │       │   └── JpaTaskRepository.java
-│   │       └── presentation/
-│   │           ├── UserController.java
-│   │           ├── HogarController.java
-│   │           └── TaskController.java
-│   └── resources/
-│       └── application.properties
-└── test/
+└── main/
     └── java/
-        └── com/domesticas/
+        └── com/tareasdomesticas/
+            ├── hogar_service/
+            │
+            ├── HogarServiceApplication.java
+            │
+            ├── domain/
+            │   ├── model/
+            │   │   ├── Usuario.java
+            │   │   ├── Hogar.java
+            │   │   ├── Tarea.java
+            │   │   └── RolUsuario.java
+            │   │
+            │   └── port/
+            │       ├── in/
+            │       │   ├── CrearHogarUseCase.java
+            │       │   ├── CrearTareaUseCase.java
+            │       │   └── AsignarTareasUseCase.java
+            │       │
+            │       └── out/
+            │           ├── HogarRepository.java
+            │           ├── UsuarioRepository.java
+            │           └── TareaRepository.java
+            │
+            ├── application/
+            │   └── service/
+            │       ├── CrearHogarService.java
+            │       ├── CrearTareaService.java
+            │       └── AsignarTareasService.java
+            │
+            ├── infrastructure/
+            │   └── adapter/
+            │       ├── in/
+            │       │   ├── HogarController.java
+            │       │   ├── TareaController.java
+            │       │   └── dto/
+            │       │       ├── CrearHogarRequest.java
+            │       │       ├── CrearTareaRequest.java
+            │       │       └── AsignarTareasRequest.java
+            │       │
+            │       └── out/
+            │           ├── InMemoryHogarRepository.java
+            │           ├── InMemoryUsuarioRepository.java
+            │           └── InMemoryTareaRepository.java
+            │
+            └── resources/
+                └── application.properties
 ```
 
 ## Próximos Pasos
