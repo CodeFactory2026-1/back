@@ -7,6 +7,7 @@ public class Hogar {
     private Integer idHogar;
     private String nombreHogar;
     private String descripcionHogar;
+    private Usuario administrador;
     private List<Usuario> usuarios;
 
     public Hogar(Integer idHogar, String nombreHogar, String descripcionHogar, Usuario creador) {
@@ -18,15 +19,16 @@ public class Hogar {
         this.usuarios = new ArrayList<>();
 
         creador.convertirEnAdministrador();
+        this.administrador = creador;
         this.usuarios.add(creador);
     } 
     private void validarNombre(String nombre) {
         if (nombre == null || nombre.trim().isEmpty()) {
-            throw new IllegalArgumentException("El nombre es obligatorio");
+            throw new IllegalArgumentException("El nombre del hogar es obligatorio");
         }
 
         if (nombre.length() < 3 || nombre.length() > 50) {
-            throw new IllegalArgumentException("El nombre no cumple la longitud permitida");
+            throw new IllegalArgumentException("El nombre del hogar no cumple la longitud permitida");
         }
     }
     
@@ -40,6 +42,8 @@ public class Hogar {
     public String getNombreHogar() {
         return nombreHogar;
     }   
-
+    public Usuario getAdministrador() {
+        return administrador;
+    }
 
 }
