@@ -126,7 +126,7 @@ src/
             │           └── out
             │               └── InMemoryTareaRepository.java  
             └── config
-            └── BeanConfig.java
+                └── BeanConfig.java
 
 ```
 
