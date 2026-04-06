@@ -64,7 +64,6 @@ public class HogarController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resp);
 
         } catch (IllegalStateException e) {
-            // CA7 - usuario ya pertenece a un hogar
             logger.warn("Conflicto al crear hogar: {}", e.getMessage());
             CrearHogarResponse resp = new CrearHogarResponse(null, request != null ? request.getNombreHogar() : null,
                     request != null ? request.getDescripcion() : null, request != null ? request.getUsuarioId() : null,

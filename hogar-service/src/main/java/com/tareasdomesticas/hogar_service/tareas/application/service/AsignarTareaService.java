@@ -52,15 +52,10 @@ public class AsignarTareaService implements AsignarTareaUseCase {
             throw new IllegalStateException("No hay tareas para asignar");
         }
 
-        // CA4 - Excedentes del ciclo anterior van primero; luego por dificultad desc
         tareas.sort(Comparator
                 .<Tarea, Boolean>comparing(Tarea::isExcedente).reversed()
                 .thenComparing(Tarea::getDificultad, Comparator.reverseOrder()));
 
-        // CA2 - Distribuir la mayor cantidad posible de forma equitativa.
-        // Si hay menos tareas que usuarios: asignar todas (una por usuario hasta donde alcance).
-        // Si hay más tareas que usuarios: cada usuario recibe el mismo número;
-        // el resto que no cabe exactamente queda como excedente (CA3).
         int totalAAsignar;
         if (tareas.size() <= usuarios.size()) {
             totalAAsignar = tareas.size();
@@ -71,18 +66,12 @@ public class AsignarTareaService implements AsignarTareaUseCase {
 
         List<Tarea> tareasAAsignar  = new ArrayList<>(tareas.subList(0, totalAAsignar));
         List<Tarea> tareasExcedentes = new ArrayList<>(tareas.subList(totalAAsignar, tareas.size()));
-        Collections.shuffle(tareasAAsignar);
-        // CA4 - mantener excedentes primero; dentro de cada grupo, dificultad desc
-        tareasAAsignar.sort(Comparator
-                .<Tarea, Boolean>comparing(Tarea::isExcedente).reversed()
-                .thenComparing(Tarea::getDificultad, Comparator.reverseOrder()));
 
         Map<Long, Integer> cargaPorUsuario = new HashMap<>();
         for (Long u : usuarios) {
             cargaPorUsuario.put(u, 0);
         }
 
-        // CA1 y CA2 - Asignación aleatoria equilibrada
         List<Map<String, Object>> asignadas = new ArrayList<>();
         for (Tarea tarea : tareasAAsignar) {
             Long usuarioId = obtenerUsuarioMenorCarga(cargaPorUsuario);
@@ -101,7 +90,7 @@ public class AsignarTareaService implements AsignarTareaUseCase {
 
         List<Map<String, Object>> excedentes = new ArrayList<>();
         for (Tarea tarea : tareasExcedentes) {
-            tarea.marcarComoExcedente();   // CA4 - quedan marcadas para el siguiente ciclo
+            tarea.marcarComoExcedente();   
             Map<String, Object> detalle = new LinkedHashMap<>();
             detalle.put("idTarea", tarea.getIdTarea());
             detalle.put("nombre", tarea.getNombreTarea());
