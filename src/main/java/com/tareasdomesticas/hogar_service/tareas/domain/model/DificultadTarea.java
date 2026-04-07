@@ -1,5 +1,6 @@
 package com.tareasdomesticas.hogar_service.tareas.domain.model;
 
-public class DificultadTarea {
+public enum DificultadTarea {
+    BAJA, MEDIA, ALTA
 
 }

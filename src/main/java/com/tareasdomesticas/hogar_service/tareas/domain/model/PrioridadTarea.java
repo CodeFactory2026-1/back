@@ -1,5 +1,5 @@
 package com.tareasdomesticas.hogar_service.tareas.domain.model;
 
-public class PrioridadTarea {
-
+public enum PrioridadTarea {
+    BAJA, MEDIA, ALTA
 }
