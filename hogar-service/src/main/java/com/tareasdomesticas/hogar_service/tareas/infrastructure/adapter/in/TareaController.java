@@ -139,7 +139,7 @@ public class TareaController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("mensaje", e.getMessage()));
         } catch (Exception e) {
-            log.error("Error al filtrar tareas", e); // ← agrega esto
+            log.error("Error al filtrar tareas", e); 
             return ResponseEntity.internalServerError()
                     .body(Map.of("mensaje", "Algo salió mal, inténtelo de nuevo."));
         }

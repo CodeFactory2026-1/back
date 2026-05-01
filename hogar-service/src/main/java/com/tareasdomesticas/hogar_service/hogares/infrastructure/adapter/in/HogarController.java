@@ -31,7 +31,6 @@ public class HogarController {
         this.eliminarMiembroUseCase = eliminarMiembroUseCase;
     }
 
-    // ── Crear hogar ───────────────────────────────────────────────────────
     @PostMapping
     public ResponseEntity<?> crearHogar(@Valid @RequestBody CrearHogarRequest req) {
         try {
@@ -57,7 +56,6 @@ public class HogarController {
         }
     }
 
-    // ── Agregar miembro ───────────────────────────────────────────────────
     @PostMapping("/{hogarId}/miembros")
     public ResponseEntity<?> agregarMiembro(@PathVariable Long hogarId,
             @Valid @RequestBody AgregarMiembroRequest req) {
@@ -78,7 +76,6 @@ public class HogarController {
         }
     }
 
-    // ── Eliminar miembro ──────────────────────────────────────────────────
     @DeleteMapping("/{hogarId}/miembros")
     public ResponseEntity<?> eliminarMiembro(@PathVariable Long hogarId,
             @Valid @RequestBody EliminarMiembroRequest req) {

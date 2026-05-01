@@ -29,8 +29,6 @@ class HogarControllerTest {
     @MockBean private AgregarMiembroUseCase  agregarMiembroUseCase;
     @MockBean private EliminarMiembroUseCase eliminarMiembroUseCase;
 
-    // ── Helpers ───────────────────────────────────────────────────────────
-
     private Map<String, Object> bodyCompleto() {
         Map<String, Object> body = new HashMap<>();
         body.put("usuarioId",     1L);
@@ -40,8 +38,6 @@ class HogarControllerTest {
         body.put("descripcion",   "desc");
         return body;
     }
-
-    // ── Tests ─────────────────────────────────────────────────────────────
 
     @Test
     void debeCrearHogarYRetornar201() throws Exception {
@@ -98,7 +94,7 @@ class HogarControllerTest {
 
     @Test
     void debeRetornar400SiUsuarioIdEsNulo() throws Exception {
-        // usuarioId tiene @NotNull — omitirlo debe fallar con 400
+
         Map<String, Object> body = bodyCompleto();
         body.remove("usuarioId");
 

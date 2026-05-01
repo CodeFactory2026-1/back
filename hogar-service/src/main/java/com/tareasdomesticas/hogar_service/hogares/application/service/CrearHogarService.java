@@ -28,8 +28,6 @@ public class CrearHogarService implements CrearHogarUseCase {
                     throw new IllegalStateException(
                             "Ya hace parte de un hogar, por lo que no puede crear otro hogar.");
                 });
-
-        // El id se deja null: la BD genera el BIGSERIAL automáticamente
         Usuario creador = new Usuario(null, command.nombreUsuario(), command.correoUsuario());
         Hogar hogar     = new Hogar(null, command.nombreHogar(), command.descripcion(), creador);
         Hogar guardado  = hogarRepository.guardar(hogar);

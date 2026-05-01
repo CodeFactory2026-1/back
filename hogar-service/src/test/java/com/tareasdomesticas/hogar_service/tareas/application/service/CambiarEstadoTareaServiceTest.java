@@ -41,8 +41,6 @@ class CambiarEstadoTareaServiceTest {
                 TAREA_ID, HOGAR_ID, "Barrer", "Desc", null,
                 LocalDateTime.now().plusDays(5),
                 DificultadTarea.BAJA, PrioridadTarea.MEDIA);
-
-        // Tarea asignada (estado ASIGNADO, tiene usuario)
         astAsignada = new AsignacionSemanalTarea(ASIGNACION_ID, TAREA_ID, USUARIO_ID);
     }
 
@@ -124,7 +122,6 @@ class CambiarEstadoTareaServiceTest {
 
     @Test
     void debeFallarSiTareaEsExcedente() {
-        // Una tarea excedente (sin usuario asignado) no puede cambiar estado
         AsignacionSemanalTarea excedente = new AsignacionSemanalTarea(ASIGNACION_ID, TAREA_ID);
 
         when(tareaRepository.buscarPorId(TAREA_ID)).thenReturn(Optional.of(tarea));
@@ -139,8 +136,6 @@ class CambiarEstadoTareaServiceTest {
 
     @Test
     void debeFallarSiTareaSinUsuarioIntentaCambiarEstado() {
-        // Tarea liberada: excedente=false pero idUsuarioAsignado=null
-        // (ocurre cuando se elimina el miembro responsable)
         AsignacionSemanalTarea sinUsuario = AsignacionSemanalTarea.reconstruir(
                 ASIGNACION_ID, TAREA_ID, null, EstadoTarea.PENDIENTE, false);
 
@@ -158,7 +153,6 @@ class CambiarEstadoTareaServiceTest {
 
     @Test
     void debeFallarSiTransicionNoEsValida() {
-        // ASIGNADO → FINALIZADO no está permitido, debe pasar por EN_PROCESO
         when(tareaRepository.buscarPorId(TAREA_ID)).thenReturn(Optional.of(tarea));
         when(asignacionRepository.buscarAsignacionActivaDeTarea(TAREA_ID, HOGAR_ID))
                 .thenReturn(Optional.of(astAsignada));

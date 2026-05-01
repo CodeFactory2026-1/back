@@ -4,7 +4,7 @@ public class AsignacionSemanalTarea {
 
     private Long idAsignacion;
     private Long idTarea;
-    private Long idUsuarioAsignado; // nullable — null significa excedente
+    private Long idUsuarioAsignado; 
     private EstadoTarea estado;
     private boolean excedente;
     public AsignacionSemanalTarea(Long idAsignacion, Long idTarea, Long idUsuarioAsignado) {
@@ -47,8 +47,6 @@ public class AsignacionSemanalTarea {
         requireNonNull(nuevoEstado, "El nuevo estado");
         if (this.excedente)
             throw new IllegalStateException("La tarea debe ser asignada antes de cambiar su estado.");
-        // Una tarea sin responsable (usuario eliminado) no puede avanzar de estado.
-        // Solo puede volver a PENDIENTE, que ya es su estado actual.
         if (this.idUsuarioAsignado == null && nuevoEstado != EstadoTarea.PENDIENTE)
             throw new IllegalStateException(
                     "La tarea no puede cambiar de estado porque no tiene un responsable asignado.");

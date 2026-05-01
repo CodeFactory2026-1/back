@@ -3,10 +3,6 @@ package com.tareasdomesticas.hogar_service.tareas.infrastructure.adapter.out;
 import com.tareasdomesticas.hogar_service.tareas.application.port.out.LiberarTareasPort;
 import com.tareasdomesticas.hogar_service.tareas.domain.port.out.AsignacionSemanalRepository;
 
-/**
- * Recibe el hogarId directamente del comando para evitar buscarlo
- * por usuario — en ese punto el usuario ya fue eliminado de la BD.
- */
 public class LiberarTareasAdapter implements LiberarTareasPort {
 
     private final AsignacionSemanalRepository asignacionRepository;
