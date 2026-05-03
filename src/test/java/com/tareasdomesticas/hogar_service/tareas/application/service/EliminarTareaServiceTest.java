@@ -91,7 +91,6 @@ class EliminarTareaServiceTest {
 
     @Test
     void debePermitirEliminarTareaExcedente() {
-        // Una tarea excedente está en estado PENDIENTE, sí puede eliminarse
         AsignacionSemanalTarea excedente = new AsignacionSemanalTarea(10L, TAREA_ID);
 
         when(tareaRepository.buscarPorId(TAREA_ID)).thenReturn(Optional.of(tarea));

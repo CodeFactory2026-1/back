@@ -28,8 +28,6 @@ public class EliminarMiembroService implements EliminarMiembroUseCase {
         hogar.eliminarMiembro(command.idMiembro());
         hogarRepository.guardar(hogar);
 
-        // Se pasa el hogarId directamente — no se busca por usuario porque
-        // en este punto el miembro ya fue eliminado de la BD.
         liberarTareasPort.liberarTareasDeUsuario(command.idMiembro(), command.hogarId());
     }
 }

@@ -22,13 +22,6 @@ public class AsignacionSemanal {
     public Long getIdAsignacion()         { return idAsignacion; }
     public Long getIdHogar()              { return idHogar; }
     public LocalDate getFechaAsignacion() { return fechaAsignacion; }
-
-    /**
-     * Verifica si esta asignación pertenece a la semana ISO actual.
-     * Usa semana ISO (lunes–domingo) en lugar de un rango de 7 días fijos,
-     * evitando que una asignación del domingo de la semana pasada siga
-     * considerándose activa el lunes siguiente.
-     */
     public boolean perteneceASemanaActual() {
         LocalDate hoy = LocalDate.now();
         return fechaAsignacion.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR)
