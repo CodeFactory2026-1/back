@@ -4,10 +4,13 @@ import java.time.LocalDateTime;
 import java.time.temporal.IsoFields;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.tareasdomesticas.hogar_service.tareas.domain.model.DificultadTarea;
+import com.tareasdomesticas.hogar_service.tareas.domain.model.PrioridadTarea;
 import com.tareasdomesticas.hogar_service.tareas.domain.model.Tarea;
 import com.tareasdomesticas.hogar_service.tareas.domain.port.out.TareaRepository;
 
@@ -27,6 +30,7 @@ public class InMemoryTareaRepository implements TareaRepository {
                     idGenerator.getAndIncrement(),
                     tarea.getIdHogar(),
                     tarea.getNombreTarea(),
+                    tarea.getDescripcionTarea(),
                     tarea.getFotoTarea(),
                     tarea.getFechaLimite(),
                     tarea.getDificultad(),
@@ -35,6 +39,21 @@ public class InMemoryTareaRepository implements TareaRepository {
 
         tareas.add(tareaToSave);
         return tareaToSave;
+    }
+
+    @Override
+    public Tarea actualizar(Tarea tarea) {
+        return null;
+    }
+
+    @Override
+    public void eliminar(Long idTarea) {
+
+    }
+
+    @Override
+    public Optional<Tarea> buscarPorId(Long idTarea) {
+        return Optional.empty();
     }
 
     @Override
@@ -48,9 +67,19 @@ public class InMemoryTareaRepository implements TareaRepository {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<Tarea> listarPendientesPorHogar(Long hogarId, List<Long> idsYaAsignadas) {
+        return List.of();
+    }
+
+    @Override
+    public List<Tarea> filtrar(Long hogarId, String nombre, DificultadTarea dificultad, PrioridadTarea prioridad) {
+        return List.of();
+    }
+
     public synchronized List<Tarea> listarPendientesPorHogar(Long hogarId) {
     return tareas.stream()
-                 .filter(t -> t.getIdHogar().equals(hogarId) && t.esPendiente())
+                 .filter(t -> t.getIdHogar().equals(hogarId) /*&& t.esPendiente()*/)
                  .collect(Collectors.toList());
     }
     public synchronized boolean existeTareaConMismoNombreEnSemana(String nombre, LocalDateTime fechaLimite, Long hogarId) {

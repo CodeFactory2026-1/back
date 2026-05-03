@@ -1,8 +1,5 @@
 package com.tareasdomesticas.hogar_service.tareas.application.port.in;
- 
-import java.util.Map;
- 
+import com.tareasdomesticas.hogar_service.tareas.application.dto.AsignacionSemanalResponse;
 public interface AsignarTareaUseCase {
-    Map<String, Object> asignarTareasSemanales(Long hogarId);
+    AsignacionSemanalResponse asignarTareasSemanales(Long hogarId);
 }
- 

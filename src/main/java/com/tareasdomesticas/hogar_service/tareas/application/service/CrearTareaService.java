@@ -1,61 +1,72 @@
 package com.tareasdomesticas.hogar_service.tareas.application.service;
 
 import java.time.LocalDateTime;
-import java.util.concurrent.atomic.AtomicLong;
 
+import com.tareasdomesticas.hogar_service.tareas.application.dto.CrearTareaResultDTO;
 import com.tareasdomesticas.hogar_service.tareas.application.port.in.CrearTareaUseCase;
-import com.tareasdomesticas.hogar_service.tareas.domain.model.*;
+import com.tareasdomesticas.hogar_service.tareas.domain.model.DificultadTarea;
+import com.tareasdomesticas.hogar_service.tareas.domain.model.PrioridadTarea;
+import com.tareasdomesticas.hogar_service.tareas.domain.model.Tarea;
 import com.tareasdomesticas.hogar_service.tareas.domain.port.out.TareaRepository;
 
 public class CrearTareaService implements CrearTareaUseCase {
 
     private final TareaRepository tareaRepository;
-    private final AtomicLong idGenerator = new AtomicLong(1);
 
-   public CrearTareaService(TareaRepository tareaRepository) {
-       this.tareaRepository = tareaRepository;
-   }
+    public CrearTareaService(TareaRepository tareaRepository) {
+        this.tareaRepository = tareaRepository;
+    }
 
-   @Override
-   public Tarea crearTarea(Long idHogar, String nombre, String foto, LocalDateTime fechaLimite, String dificultad, String prioridad) {
-        if (idHogar == null) {
-            throw new IllegalArgumentException("El idHogar es obligatorio.");
-        }
-        if (nombre == null || nombre.isBlank()) {
-            throw new IllegalArgumentException("El nombre es obligatorio");
-        }
-        if (fechaLimite == null) {
-            throw new IllegalArgumentException("La fecha límite es obligatoria");
-        }
-        if (dificultad == null || dificultad.isBlank()) {
-            throw new IllegalArgumentException("La dificultad es obligatoria");
-        }
-        if (prioridad == null || prioridad.isBlank()) {
-            throw new IllegalArgumentException("La prioridad es obligatoria");
-        }
-        if (foto != null && !foto.isBlank() && !foto.toLowerCase().endsWith(".jpg")) {
-            throw new IllegalArgumentException("Formato no permitido, debe subir JPG.");
-        }
-        if (tareaRepository.existeTareaConMismoNombreEnSemana(nombre, fechaLimite, idHogar)) {
-            throw new IllegalArgumentException("Ya existe una tarea con el mismo nombre en esta semana.");
-        }
+    @Override
+    public CrearTareaResultDTO crearTarea(Long idHogar, String nombre, String descripcion,
+            String foto, LocalDateTime fechaLimite, String dificultad, String prioridad) {
         try {
-            DificultadTarea dif = DificultadTarea.valueOf(dificultad.toUpperCase());
-            PrioridadTarea pri = PrioridadTarea.valueOf(prioridad.toUpperCase());
-            Tarea tarea = new Tarea(
-                idGenerator.getAndIncrement(),
-                idHogar,
-                nombre,
-                foto,
-                fechaLimite,
-                dif,
-                pri
-            );
-            return tareaRepository.guardar(tarea);
+            DificultadTarea dif = parsearDificultad(dificultad);
+            PrioridadTarea pri = parsearPrioridad(prioridad);
+            if (nombre != null && fechaLimite != null && idHogar != null
+                    && tareaRepository.existeTareaConMismoNombreEnSemana(nombre, fechaLimite, idHogar)) {
+                throw new IllegalArgumentException("Ya existe una tarea con el mismo nombre en esta semana.");
+            }
+            Tarea tarea = new Tarea(null, idHogar, nombre, descripcion, foto, fechaLimite, dif, pri);
+            Tarea guardada = tareaRepository.guardar(tarea);
+
+            return toDTO(guardada);
+
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Valor inválido: " + e.getMessage(), e);
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException("Algo salió mal, inténtelo de nuevo.", e);
         }
-}
+    }
+
+    private DificultadTarea parsearDificultad(String valor) {
+        if (valor == null || valor.isBlank())
+            throw new IllegalArgumentException("La dificultad es obligatoria");
+        try {
+            return DificultadTarea.valueOf(valor.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Dificultad inválida: " + valor);
+        }
+    }
+
+    private PrioridadTarea parsearPrioridad(String valor) {
+        if (valor == null || valor.isBlank())
+            throw new IllegalArgumentException("La prioridad es obligatoria");
+        try {
+            return PrioridadTarea.valueOf(valor.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Prioridad inválida: " + valor);
+        }
+    }
+
+    private CrearTareaResultDTO toDTO(Tarea t) {
+        return new CrearTareaResultDTO(
+                t.getIdTarea(),
+                t.getNombreTarea(),
+                t.getFotoTarea(),
+                t.getFechaLimite(),
+                t.getDificultad() != null ? t.getDificultad().name() : null,
+                t.getPrioridad()  != null ? t.getPrioridad().name()  : null,
+                "PENDIENTE");
+    }
 }

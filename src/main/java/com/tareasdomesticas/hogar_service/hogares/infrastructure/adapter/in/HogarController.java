@@ -1,81 +1,100 @@
 package com.tareasdomesticas.hogar_service.hogares.infrastructure.adapter.in;
 
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import java.util.Map;
 
-import com.tareasdomesticas.hogar_service.common.domain.model.Usuario;
-import com.tareasdomesticas.hogar_service.hogares.application.port.in.CrearHogarUseCase;
-import com.tareasdomesticas.hogar_service.hogares.domain.model.Hogar;
-import com.tareasdomesticas.hogar_service.hogares.infrastructure.adapter.in.DTO.CrearHogarRequest;
-
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.HttpStatus;
-import com.tareasdomesticas.hogar_service.hogares.infrastructure.adapter.in.DTO.CrearHogarResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
+import com.tareasdomesticas.hogar_service.hogares.application.dto.CrearHogarResultDTO;
+import com.tareasdomesticas.hogar_service.hogares.application.dto.MiembroDTO;
+import com.tareasdomesticas.hogar_service.hogares.application.port.in.*;
+import com.tareasdomesticas.hogar_service.hogares.infrastructure.adapter.in.dto.*;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/hogares")
 public class HogarController {
-    private final CrearHogarUseCase crearHogarUseCase;
-    private static final Logger logger = LoggerFactory.getLogger(HogarController.class);
 
-    public HogarController(CrearHogarUseCase crearHogarUseCase) {
-        this.crearHogarUseCase = crearHogarUseCase;
+    private static final Logger log = LoggerFactory.getLogger(HogarController.class);
+
+    private final CrearHogarUseCase     crearHogarUseCase;
+    private final AgregarMiembroUseCase agregarMiembroUseCase;
+    private final EliminarMiembroUseCase eliminarMiembroUseCase;
+
+    public HogarController(CrearHogarUseCase crearHogarUseCase,
+            AgregarMiembroUseCase agregarMiembroUseCase,
+            EliminarMiembroUseCase eliminarMiembroUseCase) {
+        this.crearHogarUseCase     = crearHogarUseCase;
+        this.agregarMiembroUseCase = agregarMiembroUseCase;
+        this.eliminarMiembroUseCase = eliminarMiembroUseCase;
     }
 
+    // ── Crear hogar ───────────────────────────────────────────────────────
     @PostMapping
-    public ResponseEntity<CrearHogarResponse> crearHogar(@RequestBody CrearHogarRequest request) {
-        if (request == null) {
-            logger.warn("Request para crear hogar es null");
-            CrearHogarResponse resp = new CrearHogarResponse(null, null, null, null, "Request inválido");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resp);
-        }
-
+    public ResponseEntity<?> crearHogar(@Valid @RequestBody CrearHogarRequest req) {
         try {
-            logger.info("Creando hogar: {} por usuario id={}", request.getNombreHogar(), request.getUsuarioId());
-
-            Usuario usuario = new Usuario(
-                    request.getUsuarioId(),
-                    request.getNombreUsuario(),
-                    request.getCorreoUsuario());
-
-            Hogar hogarCreado = crearHogarUseCase.crearHogar(
-                request.getNombreHogar(),
-                request.getDescripcion(),
-                usuario);
-
-            CrearHogarResponse resp = new CrearHogarResponse(
-                    hogarCreado.getIdHogar(), 
-                    hogarCreado.getNombreHogar(),
-                    hogarCreado.getDescripcionHogar(),
-                    request.getUsuarioId(),
-                    "Hogar creado exitosamente"
-                );
-                return ResponseEntity.status(HttpStatus.CREATED).body(resp);
-
+            log.info("Creando hogar: {} por usuario correo={}", req.getNombreHogar(), req.getCorreoUsuario());
+            CrearHogarCommand command = new CrearHogarCommand(
+                    req.getUsuarioId(),
+                    req.getNombreUsuario(),
+                    req.getCorreoUsuario(),
+                    req.getNombreHogar(),
+                    req.getDescripcion());
+            CrearHogarResultDTO hogar = crearHogarUseCase.crearHogar(command);
+            return ResponseEntity.status(HttpStatus.CREATED).body(new CrearHogarResponse(
+                    hogar.idHogar(), hogar.nombreHogar(), hogar.descripcionHogar(),
+                    hogar.idAdministrador(), "Hogar creado exitosamente"));
         } catch (IllegalArgumentException e) {
-            logger.warn("Error de validación: {}", e.getMessage());
-            CrearHogarResponse resp = new CrearHogarResponse(null, request != null ? request.getNombreHogar() : null,
-                    request != null ? request.getDescripcion() : null, request != null ? request.getUsuarioId() : null,
-                    e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(resp);
-
+            return ResponseEntity.badRequest().body(Map.of("mensaje", e.getMessage()));
         } catch (IllegalStateException e) {
-            logger.warn("Conflicto al crear hogar: {}", e.getMessage());
-            CrearHogarResponse resp = new CrearHogarResponse(null, request != null ? request.getNombreHogar() : null,
-                    request != null ? request.getDescripcion() : null, request != null ? request.getUsuarioId() : null,
-                    e.getMessage());
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(resp);
-
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("mensaje", e.getMessage()));
         } catch (Exception e) {
-            logger.error("Error inesperado al crear hogar", e);
-            CrearHogarResponse resp = new CrearHogarResponse(null, request != null ? request.getNombreHogar() : null,
-                    request != null ? request.getDescripcion() : null, request != null ? request.getUsuarioId() : null,
-                    "Algo salió mal, inténtelo de nuevo");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(resp);
+            log.error("Error al crear hogar", e);
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("mensaje", "Algo salió mal, inténtelo de nuevo."));
+        }
+    }
+
+    // ── Agregar miembro ───────────────────────────────────────────────────
+    @PostMapping("/{hogarId}/miembros")
+    public ResponseEntity<?> agregarMiembro(@PathVariable Long hogarId,
+            @Valid @RequestBody AgregarMiembroRequest req) {
+        try {
+            MiembroDTO miembro = agregarMiembroUseCase.agregarMiembro(
+                    new AgregarMiembroCommand(hogarId, req.getIdAdministrador(),
+                            req.getNombre(), req.getCorreo()));
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(Map.of("mensaje", "Miembro agregado exitosamente.", "miembro", miembro));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("mensaje", e.getMessage()));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("mensaje", e.getMessage()));
+        } catch (Exception e) {
+            log.error("Error al agregar miembro", e);
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("mensaje", "Algo salió mal, inténtelo de nuevo."));
+        }
+    }
+
+    // ── Eliminar miembro ──────────────────────────────────────────────────
+    @DeleteMapping("/{hogarId}/miembros")
+    public ResponseEntity<?> eliminarMiembro(@PathVariable Long hogarId,
+            @Valid @RequestBody EliminarMiembroRequest req) {
+        try {
+            eliminarMiembroUseCase.eliminarMiembro(
+                    new EliminarMiembroCommand(hogarId, req.getIdAdministrador(), req.getIdMiembro()));
+            return ResponseEntity.ok(
+                    Map.of("mensaje", "Miembro eliminado. Sus tareas quedaron pendientes."));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("mensaje", e.getMessage()));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("mensaje", e.getMessage()));
+        } catch (Exception e) {
+            log.error("Error al eliminar miembro", e);
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("mensaje", "Algo salió mal, inténtelo de nuevo."));
         }
     }
 }

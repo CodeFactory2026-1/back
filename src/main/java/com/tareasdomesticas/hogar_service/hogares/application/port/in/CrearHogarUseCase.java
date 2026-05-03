@@ -1,7 +1,6 @@
 package com.tareasdomesticas.hogar_service.hogares.application.port.in;
 
-import com.tareasdomesticas.hogar_service.hogares.domain.model.Hogar;
-import com.tareasdomesticas.hogar_service.common.domain.model.Usuario;
+import com.tareasdomesticas.hogar_service.hogares.application.dto.CrearHogarResultDTO;
 public interface CrearHogarUseCase {
-    Hogar crearHogar(String nombre, String descripcion, Usuario usuario);
+    CrearHogarResultDTO crearHogar(CrearHogarCommand command);
 }

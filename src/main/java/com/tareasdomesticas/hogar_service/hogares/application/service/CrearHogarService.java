@@ -1,50 +1,54 @@
 package com.tareasdomesticas.hogar_service.hogares.application.service;
 
-import com.tareasdomesticas.hogar_service.hogares.domain.model.Hogar;
 import com.tareasdomesticas.hogar_service.common.domain.model.Usuario;
+import com.tareasdomesticas.hogar_service.hogares.application.dto.CrearHogarResultDTO;
+import com.tareasdomesticas.hogar_service.hogares.application.port.in.CrearHogarCommand;
 import com.tareasdomesticas.hogar_service.hogares.application.port.in.CrearHogarUseCase;
+import com.tareasdomesticas.hogar_service.hogares.domain.model.Hogar;
 import com.tareasdomesticas.hogar_service.hogares.domain.port.out.HogarRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class CrearHogarService implements CrearHogarUseCase {
+
+    private static final Logger log = LoggerFactory.getLogger(CrearHogarService.class);
+
     private final HogarRepository hogarRepository;
-    private static final Logger logger = LoggerFactory.getLogger(CrearHogarService.class);
-    private static final AtomicInteger ID_GENERATOR = new AtomicInteger(0);
+
     public CrearHogarService(HogarRepository hogarRepository) {
         this.hogarRepository = hogarRepository;
     }
 
     @Override
-    public Hogar crearHogar(String nombre, String descripcion, Usuario usuario) {
+    public CrearHogarResultDTO crearHogar(CrearHogarCommand command) {
+        validarComando(command);
 
-        if (usuario.getIdUsuario() == null) {
-            throw new IllegalArgumentException("El usuario es requerido");
-        }
+        hogarRepository.buscarPorCorreoUsuario(command.correoUsuario())
+                .ifPresent(h -> {
+                    throw new IllegalStateException(
+                            "Ya hace parte de un hogar, por lo que no puede crear otro hogar.");
+                });
 
-        if (hogarRepository.buscarPorUsuarioId(usuario.getIdUsuario()).isPresent()) {
-            throw new IllegalStateException("Ya hace parte de un hogar, por lo que no puede crear otro hogar");
-        }
+        // El id se deja null: la BD genera el BIGSERIAL automáticamente
+        Usuario creador = new Usuario(null, command.nombreUsuario(), command.correoUsuario());
+        Hogar hogar     = new Hogar(null, command.nombreHogar(), command.descripcion(), creador);
+        Hogar guardado  = hogarRepository.guardar(hogar);
 
-        try {
-            Hogar hogar = new Hogar(
-                    generarId(),
-                    nombre,
-                    descripcion,
-                    usuario);
-            logger.info("Administrador del hogar: {}", hogar.getAdministrador().getNombreUsuario());
+        log.info("Hogar creado. ID={}, admin={}",
+                guardado.getIdHogar(),
+                guardado.getAdministrador().getNombreUsuario());
 
-            return hogarRepository.guardar(hogar);
-
-        } catch (Exception e) {
-            logger.error("Error al crear el hogar para el usuario {}", usuario.getIdUsuario(), e);
-            throw new RuntimeException("Algo salió mal, inténtelo de nuevo", e);
-        }
-
+        return new CrearHogarResultDTO(
+                guardado.getIdHogar(),
+                guardado.getNombreHogar(),
+                guardado.getDescripcionHogar(),
+                guardado.getAdministrador().getIdUsuario());
     }
 
-    private Integer generarId() {
-        return ID_GENERATOR.incrementAndGet();
+    private void validarComando(CrearHogarCommand command) {
+        if (command.nombreUsuario() == null || command.nombreUsuario().isBlank())
+            throw new IllegalArgumentException("El nombre del usuario es requerido.");
+        if (command.correoUsuario() == null || command.correoUsuario().isBlank())
+            throw new IllegalArgumentException("El correo del usuario es requerido.");
     }
 }

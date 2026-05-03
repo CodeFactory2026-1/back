@@ -1,126 +1,104 @@
 package com.tareasdomesticas.hogar_service.tareas.application.service;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import com.tareasdomesticas.hogar_service.hogares.domain.model.Hogar;
-import com.tareasdomesticas.hogar_service.hogares.domain.port.out.HogarRepository;
+import com.tareasdomesticas.hogar_service.tareas.application.dto.*;
 import com.tareasdomesticas.hogar_service.tareas.application.port.in.AsignarTareaUseCase;
-import com.tareasdomesticas.hogar_service.tareas.domain.model.DificultadTarea;
-import com.tareasdomesticas.hogar_service.tareas.domain.model.Tarea;
-import com.tareasdomesticas.hogar_service.tareas.domain.port.out.TareaRepository;
+import com.tareasdomesticas.hogar_service.tareas.application.port.out.ObtenerMiembrosHogarPort;
+import com.tareasdomesticas.hogar_service.tareas.domain.model.*;
+import com.tareasdomesticas.hogar_service.tareas.domain.port.out.*;
 
 public class AsignarTareaService implements AsignarTareaUseCase {
 
     private final TareaRepository tareaRepository;
-    private final HogarRepository hogarRepository;
-    private LocalDate ultimaAsignacion = null;
+    private final AsignacionSemanalRepository asignacionRepository;
+    private final ObtenerMiembrosHogarPort obtenerMiembrosPort;
 
-    public AsignarTareaService(TareaRepository tareaRepository, HogarRepository hogarRepository) {
-        this.tareaRepository = tareaRepository;
-        this.hogarRepository = hogarRepository;
+    public AsignarTareaService(TareaRepository tareaRepository,
+                               AsignacionSemanalRepository asignacionRepository,
+                               ObtenerMiembrosHogarPort obtenerMiembrosPort) {
+        this.tareaRepository     = tareaRepository;
+        this.asignacionRepository = asignacionRepository;
+        this.obtenerMiembrosPort  = obtenerMiembrosPort;
     }
 
     @Override
-    public Map<String, Object> asignarTareasSemanales(Long hogarId) {
+    public AsignacionSemanalResponse asignarTareasSemanales(Long hogarId) {
 
-        if (ultimaAsignacion != null &&
-            ultimaAsignacion.plusDays(7).isAfter(LocalDate.now())) {
-            throw new IllegalStateException("Solo se puede asignar una vez por semana");
-        }
+        asignacionRepository.obtenerUltimaAsignacion(hogarId).ifPresent(ultima -> {
+            if (ultima.perteneceASemanaActual())
+                throw new IllegalStateException("Solo se puede asignar una vez por semana");
+        });
 
-        Hogar hogar = hogarRepository.buscarPorId(hogarId)
-                .orElseThrow(() -> new IllegalStateException("No se encontró el hogar con id: " + hogarId));
+        List<Long> usuarios = obtenerMiembrosPort.obtenerIdsUsuarios(hogarId);
+        if (usuarios == null || usuarios.isEmpty())
+            throw new IllegalStateException("No se encontró el hogar: " + hogarId);
 
-        List<Long> usuarios = hogar.getUsuarios().stream()
-                .map(u -> u.getIdUsuario().longValue())
-                .collect(Collectors.toList());
+        List<Long> idsExcedentes = asignacionRepository.obtenerIdsTareasExcedentes(hogarId);
+        List<Long> idsYaAsignados = asignacionRepository
+                .obtenerUltimaAsignacion(hogarId)
+                .map(a -> asignacionRepository.listarPorAsignacion(a.getIdAsignacion())
+                        .stream().map(AsignacionSemanalTarea::getIdTarea).toList())
+                .orElse(List.of());
 
-        if (usuarios.isEmpty()) {
-            throw new IllegalStateException("No hay usuarios en el hogar");
-        }
+        List<Tarea> tareas = new ArrayList<>(
+                tareaRepository.listarPendientesPorHogar(hogarId, idsYaAsignados));
 
-        List<Tarea> tareas = tareaRepository.listarPendientesPorHogar(hogarId);
-        if (tareas.isEmpty()) {
+        if (tareas.isEmpty())
             throw new IllegalStateException("No hay tareas para asignar");
-        }
 
+        // Priorizar excedentes y luego ordenar por dificultad descendente
+        Set<Long> excedentesSet = new HashSet<>(idsExcedentes);
         tareas.sort(Comparator
-                .<Tarea, Boolean>comparing(Tarea::isExcedente).reversed()
+                .<Tarea, Boolean>comparing(t -> excedentesSet.contains(t.getIdTarea())).reversed()
                 .thenComparing(Tarea::getDificultad, Comparator.reverseOrder()));
 
-        int totalAAsignar;
-        if (tareas.size() <= usuarios.size()) {
-            totalAAsignar = tareas.size();
-        } else {
-            int tareasPorUsuario = tareas.size() / usuarios.size();
-            totalAAsignar = tareasPorUsuario * usuarios.size();
+        int totalAAsignar = tareas.size() <= usuarios.size()
+                ? tareas.size()
+                : (tareas.size() / usuarios.size()) * usuarios.size();
+
+        List<Tarea> aAsignar   = new ArrayList<>(tareas.subList(0, totalAAsignar));
+        List<Tarea> excedentes = new ArrayList<>(tareas.subList(totalAAsignar, tareas.size()));
+
+        AsignacionSemanal nuevaAsignacion = asignacionRepository.guardarAsignacion(
+                new AsignacionSemanal(null, hogarId, LocalDate.now()));
+
+        Map<Long, Integer> carga = new HashMap<>();
+        usuarios.forEach(u -> carga.put(u, 0));
+
+        List<TareaAsignadaDTO> asignadas = new ArrayList<>();
+        for (Tarea tarea : aAsignar) {
+            Long usuarioId = usuarioMenorCarga(carga);
+            AsignacionSemanalTarea ast = new AsignacionSemanalTarea(
+                    nuevaAsignacion.getIdAsignacion(), tarea.getIdTarea(), usuarioId);
+            asignacionRepository.guardarAsignacionTarea(ast);
+            // OCP: el peso lo conoce el enum, no el servicio
+            carga.put(usuarioId, carga.get(usuarioId) + tarea.getDificultad().getPeso());
+            asignadas.add(new TareaAsignadaDTO(
+                    tarea.getIdTarea(), tarea.getNombreTarea(),
+                    tarea.getDificultad().name(), usuarioId, ast.getEstado().name()));
         }
 
-        List<Tarea> tareasAAsignar  = new ArrayList<>(tareas.subList(0, totalAAsignar));
-        List<Tarea> tareasExcedentes = new ArrayList<>(tareas.subList(totalAAsignar, tareas.size()));
-
-        Map<Long, Integer> cargaPorUsuario = new HashMap<>();
-        for (Long u : usuarios) {
-            cargaPorUsuario.put(u, 0);
+        List<TareaExcedenteDTO> excedentesDTO = new ArrayList<>();
+        for (Tarea tarea : excedentes) {
+            AsignacionSemanalTarea ast = new AsignacionSemanalTarea(
+                    nuevaAsignacion.getIdAsignacion(), tarea.getIdTarea());
+            asignacionRepository.guardarAsignacionTarea(ast);
+            excedentesDTO.add(new TareaExcedenteDTO(
+                    tarea.getIdTarea(), tarea.getNombreTarea(),
+                    tarea.getDificultad().name(), ast.getEstado().name()));
         }
 
-        List<Map<String, Object>> asignadas = new ArrayList<>();
-        for (Tarea tarea : tareasAAsignar) {
-            Long usuarioId = obtenerUsuarioMenorCarga(cargaPorUsuario);
-            tarea.asignarA(usuarioId);
-            int nuevaCarga = cargaPorUsuario.get(usuarioId) + peso(tarea.getDificultad());
-            cargaPorUsuario.put(usuarioId, nuevaCarga);
-
-            Map<String, Object> detalle = new LinkedHashMap<>();
-            detalle.put("idTarea", tarea.getIdTarea());
-            detalle.put("nombre", tarea.getNombreTarea());
-            detalle.put("dificultad", tarea.getDificultad());
-            detalle.put("usuarioAsignado", usuarioId);
-            detalle.put("estado", tarea.getEstado());
-            asignadas.add(detalle);
-        }
-
-        List<Map<String, Object>> excedentes = new ArrayList<>();
-        for (Tarea tarea : tareasExcedentes) {
-            tarea.marcarComoExcedente();   
-            Map<String, Object> detalle = new LinkedHashMap<>();
-            detalle.put("idTarea", tarea.getIdTarea());
-            detalle.put("nombre", tarea.getNombreTarea());
-            detalle.put("dificultad", tarea.getDificultad());
-            detalle.put("estado", tarea.getEstado());
-            excedentes.add(detalle);
-        }
-
-        ultimaAsignacion = LocalDate.now();
-
-        Map<String, Object> resultado = new LinkedHashMap<>();
-        resultado.put("mensaje", "Tareas asignadas correctamente");
-        resultado.put("hogarId", hogarId);
-        resultado.put("tareasAsignadas", asignadas);
-        resultado.put("tareasExcedentes", excedentes);
-        return resultado;
+        return new AsignacionSemanalResponse(
+                "Tareas asignadas correctamente", hogarId, asignadas, excedentesDTO);
     }
 
-    private int peso(DificultadTarea d) {
-        return switch (d) {
-            case ALTA -> 3;
-            case MEDIA -> 2;
-            case BAJA -> 1;
-        };
-    }
-
-    private Long obtenerUsuarioMenorCarga(Map<Long, Integer> cargaPorUsuario) {
-        int minCarga = Collections.min(cargaPorUsuario.values());
-        List<Long> candidatos = cargaPorUsuario.entrySet().stream()
-                .filter(e -> e.getValue() == minCarga)
+    private Long usuarioMenorCarga(Map<Long, Integer> carga) {
+        int min = Collections.min(carga.values());
+        List<Long> candidatos = carga.entrySet().stream()
+                .filter(e -> e.getValue() == min)
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
         Collections.shuffle(candidatos);
