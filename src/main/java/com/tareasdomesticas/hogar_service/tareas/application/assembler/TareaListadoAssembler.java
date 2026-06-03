@@ -6,11 +6,6 @@ import com.tareasdomesticas.hogar_service.tareas.domain.model.AsignacionSemanalT
 import com.tareasdomesticas.hogar_service.tareas.domain.model.EstadoTarea;
 import com.tareasdomesticas.hogar_service.tareas.domain.model.Tarea;
 
-/**
- * Ensamblador centralizado para convertir Tarea + AsignacionSemanalTarea → TareaListadoDTO.
- * Principio SRP: única clase responsable de esta conversión.
- * Principio DRY: evita duplicar toDTO() en los cuatro servicios que lo necesitaban.
- */
 public final class TareaListadoAssembler {
 
     private TareaListadoAssembler() {}

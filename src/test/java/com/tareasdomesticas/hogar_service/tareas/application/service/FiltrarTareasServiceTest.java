@@ -36,9 +36,9 @@ class FiltrarTareasServiceTest {
 
     @BeforeEach
     void setUp() {
-        tareaAlta = new Tarea(1L, HOGAR_ID, "Limpiar cocina", null, null,
+        tareaAlta = new Tarea(1L, HOGAR_ID, null, "Limpiar cocina", null, null,
                 LocalDateTime.now().plusDays(3), DificultadTarea.ALTA, PrioridadTarea.ALTA);
-        tareaBaja = new Tarea(2L, HOGAR_ID, "Barrer sala", null, null,
+        tareaBaja = new Tarea(2L, HOGAR_ID, null, "Barrer sala", null, null,
                 LocalDateTime.now().plusDays(3), DificultadTarea.BAJA, PrioridadTarea.BAJA);
     }
 

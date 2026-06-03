@@ -52,4 +52,15 @@ public interface AsignacionSemanalTareaJpaRepository
     Optional<AsignacionSemanalTareaEntity> findActivaByTareaAndHogar(
             @Param("idTarea")  Long idTarea,
             @Param("hogarId")  Long hogarId);
+
+    @Query("""
+            SELECT ast FROM AsignacionSemanalTareaEntity ast
+            JOIN ast.asignacion a
+            WHERE a.idHogar = :hogarId
+              AND a.idAsignacion = (
+                  SELECT MAX(a2.idAsignacion) FROM AsignacionSemanalEntity a2
+                  WHERE a2.idHogar = :hogarId
+              )
+            """)
+    List<AsignacionSemanalTareaEntity> findActivasByHogar(@Param("hogarId") Long hogarId);
 }

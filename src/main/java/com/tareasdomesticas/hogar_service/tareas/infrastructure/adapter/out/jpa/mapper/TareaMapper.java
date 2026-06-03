@@ -5,13 +5,13 @@ import com.tareasdomesticas.hogar_service.tareas.infrastructure.adapter.out.jpa.
 
 public final class TareaMapper {
 
-    private TareaMapper() {
-    }
+    private TareaMapper() {}
 
     public static Tarea toDomain(TareaEntity e) {
         return Tarea.reconstruir(
                 e.getIdTarea(),
                 e.getIdHogar(),
+                e.getIdUsuarioCreador(),
                 e.getNombreTarea(),
                 e.getDescripcionTarea(),
                 e.getFotoTarea(),
@@ -24,6 +24,7 @@ public final class TareaMapper {
         return TareaEntity.builder()
                 .idTarea(t.getIdTarea())
                 .idHogar(t.getIdHogar())
+                .idUsuarioCreador(t.getIdUsuarioCreador())
                 .nombreTarea(t.getNombreTarea())
                 .descripcionTarea(t.getDescripcionTarea())
                 .fotoTarea(t.getFotoTarea())

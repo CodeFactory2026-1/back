@@ -1,5 +1,8 @@
 package com.tareasdomesticas.hogar_service.tareas.application.service;
 
+import com.tareasdomesticas.hogar_service.common.application.port.out.ResolverNombreUsuarioPort;
+import com.tareasdomesticas.hogar_service.historial.application.port.in.RegistrarAccionHistorialUseCase;
+import com.tareasdomesticas.hogar_service.historial.domain.model.TipoAccion;
 import com.tareasdomesticas.hogar_service.tareas.application.assembler.TareaListadoAssembler;
 import com.tareasdomesticas.hogar_service.tareas.application.dto.TareaListadoDTO;
 import com.tareasdomesticas.hogar_service.tareas.application.port.in.EditarTareaCommand;
@@ -12,11 +15,17 @@ public class EditarTareaService implements EditarTareaUseCase {
 
     private final TareaRepository tareaRepository;
     private final AsignacionSemanalRepository asignacionSemanalRepository;
+    private final RegistrarAccionHistorialUseCase historial;
+    private final ResolverNombreUsuarioPort resolverNombre;
 
     public EditarTareaService(TareaRepository tareaRepository,
-                              AsignacionSemanalRepository asignacionSemanalRepository) {
-        this.tareaRepository              = tareaRepository;
-        this.asignacionSemanalRepository  = asignacionSemanalRepository;
+            AsignacionSemanalRepository asignacionSemanalRepository,
+            RegistrarAccionHistorialUseCase historial,
+            ResolverNombreUsuarioPort resolverNombre) {
+        this.tareaRepository = tareaRepository;
+        this.asignacionSemanalRepository = asignacionSemanalRepository;
+        this.historial = historial;
+        this.resolverNombre = resolverNombre;
     }
 
     @Override
@@ -44,9 +53,18 @@ public class EditarTareaService implements EditarTareaUseCase {
                 });
 
         tarea.editar(command.nuevoNombre(), command.nuevaDescripcion(),
-                     dificultad, command.nuevaFecha());
+                dificultad, command.nuevaFecha());
 
         Tarea actualizada = tareaRepository.actualizar(tarea);
+
+        // Actor = administrador que ejecutó la edición (viene del request, no del
+        // creador)
+        String nombreAdmin = resolverNombre.resolverNombre(command.idUsuarioAdmin());
+        String detalle = "Tarea editada por " + nombreAdmin;
+        historial.registrar(actualizada.getIdHogar(), actualizada.getIdTarea(),
+                actualizada.getNombreTarea(), TipoAccion.TAREA_EDITADA,
+                command.idUsuarioAdmin(), nombreAdmin, detalle);
+
         AsignacionSemanalTarea ast = asignacionSemanalRepository
                 .buscarAsignacionActivaDeTarea(actualizada.getIdTarea(), actualizada.getIdHogar())
                 .orElse(null);

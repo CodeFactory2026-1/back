@@ -7,6 +7,7 @@ public class Tarea {
 
     private Long idTarea;
     private Long idHogar;
+    private Long idUsuarioCreador;
     private String nombreTarea;
     private String descripcionTarea;
     private String fotoTarea;
@@ -14,10 +15,12 @@ public class Tarea {
     private DificultadTarea dificultad;
     private PrioridadTarea prioridad;
 
-    public Tarea(Long idTarea, Long idHogar, String nombreTarea, String descripcionTarea,
+    public Tarea(Long idTarea, Long idHogar, Long idUsuarioCreador,
+            String nombreTarea, String descripcionTarea,
             String fotoTarea, LocalDateTime fechaLimite,
             DificultadTarea dificultad, PrioridadTarea prioridad) {
         validarIdHogar(idHogar);
+        validarIdUsuarioCreador(idUsuarioCreador);
         validarNombre(nombreTarea);
         validarDescripcion(descripcionTarea);
         validarFecha(fechaLimite);
@@ -27,22 +30,22 @@ public class Tarea {
         if (prioridad == null)
             throw new IllegalArgumentException("La prioridad es obligatoria.");
 
-        this.idTarea = idTarea;
-        this.idHogar = idHogar;
-        this.nombreTarea = nombreTarea;
-        this.descripcionTarea = descripcionTarea;
-        this.fotoTarea = fotoTarea;
-        this.fechaLimite = fechaLimite;
-        this.dificultad = dificultad;
-        this.prioridad = prioridad;
+        this.idTarea           = idTarea;
+        this.idHogar           = idHogar;
+        this.idUsuarioCreador  = idUsuarioCreador;
+        this.nombreTarea       = nombreTarea;
+        this.descripcionTarea  = descripcionTarea;
+        this.fotoTarea         = fotoTarea;
+        this.fechaLimite       = fechaLimite;
+        this.dificultad        = dificultad;
+        this.prioridad         = prioridad;
     }
 
-    private Tarea() {
-    }
+    private Tarea() {}
 
-    public static Tarea reconstruir(Long idTarea, Long idHogar, String nombreTarea,
-            String descripcionTarea, String fotoTarea, LocalDateTime fechaLimite,
-            DificultadTarea dificultad, PrioridadTarea prioridad) {
+    public static Tarea reconstruir(Long idTarea, Long idHogar, Long idUsuarioCreador,
+            String nombreTarea, String descripcionTarea, String fotoTarea,
+            LocalDateTime fechaLimite, DificultadTarea dificultad, PrioridadTarea prioridad) {
         if (idHogar == null)
             throw new IllegalArgumentException("El idHogar es obligatorio.");
         if (nombreTarea == null || nombreTarea.isBlank())
@@ -52,19 +55,24 @@ public class Tarea {
         if (prioridad == null)
             throw new IllegalArgumentException("La prioridad es obligatoria.");
         Tarea t = new Tarea();
-        t.idTarea = idTarea;
-        t.idHogar = idHogar;
-        t.nombreTarea = nombreTarea;
+        t.idTarea          = idTarea;
+        t.idHogar          = idHogar;
+        t.idUsuarioCreador = idUsuarioCreador;
+        t.nombreTarea      = nombreTarea;
         t.descripcionTarea = descripcionTarea;
-        t.fotoTarea = fotoTarea;
-        t.fechaLimite = fechaLimite;
-        t.dificultad = dificultad;
-        t.prioridad = prioridad;
+        t.fotoTarea        = fotoTarea;
+        t.fechaLimite      = fechaLimite;
+        t.dificultad       = dificultad;
+        t.prioridad        = prioridad;
         return t;
     }
+
     private void validarIdHogar(Long v) {
-        if (v == null)
-            throw new IllegalArgumentException("El idHogar es obligatorio.");
+        if (v == null) throw new IllegalArgumentException("El idHogar es obligatorio.");
+    }
+
+    private void validarIdUsuarioCreador(Long v) {
+        if (v == null) throw new IllegalArgumentException("El id del usuario creador es obligatorio.");
     }
 
     private void validarNombre(String v) {
@@ -81,8 +89,7 @@ public class Tarea {
     }
 
     private void validarFecha(LocalDateTime v) {
-        if (v == null)
-            throw new IllegalArgumentException("La fecha límite es obligatoria.");
+        if (v == null) throw new IllegalArgumentException("La fecha límite es obligatoria.");
         if (v.isBefore(LocalDateTime.now()))
             throw new IllegalArgumentException("La fecha límite no puede ser anterior al momento actual.");
     }
@@ -101,46 +108,23 @@ public class Tarea {
         validarFecha(nuevaFecha);
         if (nuevaDificultad == null)
             throw new IllegalArgumentException("La dificultad es obligatoria.");
-        this.nombreTarea = nuevoNombre;
+        this.nombreTarea      = nuevoNombre;
         this.descripcionTarea = nuevaDescripcion;
-        this.dificultad = nuevaDificultad;
-        this.fechaLimite = nuevaFecha;
+        this.dificultad       = nuevaDificultad;
+        this.fechaLimite      = nuevaFecha;
     }
 
     public int getSemana() {
         return fechaLimite.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
     }
 
-    public Long getIdTarea() {
-        return idTarea;
-    }
-
-    public Long getIdHogar() {
-        return idHogar;
-    }
-
-    public String getNombreTarea() {
-        return nombreTarea;
-    }
-
-    public String getDescripcionTarea() {
-        return descripcionTarea;
-    }
-
-    public String getFotoTarea() {
-        return fotoTarea;
-    }
-
-    public LocalDateTime getFechaLimite() {
-        return fechaLimite;
-    }
-
-    public DificultadTarea getDificultad() {
-        return dificultad;
-    }
-
-    public PrioridadTarea getPrioridad() {
-        return prioridad;
-    }
-
+    public Long            getIdTarea()          { return idTarea; }
+    public Long            getIdHogar()          { return idHogar; }
+    public Long            getIdUsuarioCreador() { return idUsuarioCreador; }
+    public String          getNombreTarea()      { return nombreTarea; }
+    public String          getDescripcionTarea() { return descripcionTarea; }
+    public String          getFotoTarea()        { return fotoTarea; }
+    public LocalDateTime   getFechaLimite()      { return fechaLimite; }
+    public DificultadTarea getDificultad()       { return dificultad; }
+    public PrioridadTarea  getPrioridad()        { return prioridad; }
 }

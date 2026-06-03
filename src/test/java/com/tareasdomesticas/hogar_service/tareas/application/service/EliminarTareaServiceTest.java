@@ -33,7 +33,7 @@ class EliminarTareaServiceTest {
     @BeforeEach
     void setUp() {
         tarea = new Tarea(
-                TAREA_ID, HOGAR_ID, "Barrer", null, null,
+                TAREA_ID, HOGAR_ID, null, "Barrer", null, null,
                 LocalDateTime.now().plusDays(3),
                 DificultadTarea.BAJA, PrioridadTarea.MEDIA);
     }
@@ -44,7 +44,7 @@ class EliminarTareaServiceTest {
         when(asignacionRepository.buscarAsignacionActivaDeTarea(TAREA_ID, HOGAR_ID))
                 .thenReturn(Optional.empty());
 
-        service.eliminarTarea(TAREA_ID);
+        service.eliminarTarea(TAREA_ID, null);
 
         verify(tareaRepository).eliminar(TAREA_ID);
     }
@@ -53,7 +53,7 @@ class EliminarTareaServiceTest {
     void debeFallarSiTareaNoExiste() {
         when(tareaRepository.buscarPorId(99L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> service.eliminarTarea(99L))
+        assertThatThrownBy(() -> service.eliminarTarea(99L, null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("no existe");
 
@@ -68,7 +68,7 @@ class EliminarTareaServiceTest {
         when(asignacionRepository.buscarAsignacionActivaDeTarea(TAREA_ID, HOGAR_ID))
                 .thenReturn(Optional.of(ast));
 
-        assertThatThrownBy(() -> service.eliminarTarea(TAREA_ID))
+        assertThatThrownBy(() -> service.eliminarTarea(TAREA_ID, null))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("asignada o en progreso");
 
@@ -84,7 +84,7 @@ class EliminarTareaServiceTest {
         when(asignacionRepository.buscarAsignacionActivaDeTarea(TAREA_ID, HOGAR_ID))
                 .thenReturn(Optional.of(ast));
 
-        assertThatThrownBy(() -> service.eliminarTarea(TAREA_ID))
+        assertThatThrownBy(() -> service.eliminarTarea(TAREA_ID, null))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("asignada o en progreso");
     }
@@ -97,7 +97,7 @@ class EliminarTareaServiceTest {
         when(asignacionRepository.buscarAsignacionActivaDeTarea(TAREA_ID, HOGAR_ID))
                 .thenReturn(Optional.of(excedente));
 
-        service.eliminarTarea(TAREA_ID);
+        service.eliminarTarea(TAREA_ID, null);
 
         verify(tareaRepository).eliminar(TAREA_ID);
     }

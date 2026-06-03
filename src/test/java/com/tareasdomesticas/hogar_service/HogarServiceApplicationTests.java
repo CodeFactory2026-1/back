@@ -15,14 +15,11 @@ import org.springframework.test.context.TestPropertySource;
         "spring.jpa.hibernate.ddl-auto=create-drop",
         "spring.jpa.database-platform=org.hibernate.dialect.H2Dialect",
         "spring.jpa.show-sql=false",
-        // Evita conflicto entre @JdbcTypeCode(SqlTypes.NAMED_ENUM) y H2
         "spring.jpa.properties.hibernate.type.preferred_uuid_jdbc_type=CHAR"
 })
 class HogarServiceApplicationTests {
 
     @Test
     void contextLoads() {
-        // Verifica que el contexto de Spring arranca correctamente
-        // con H2 en memoria, sin necesidad de PostgreSQL.
     }
 }

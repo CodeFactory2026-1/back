@@ -35,9 +35,9 @@ class ListarTareasServiceTest {
 
     @BeforeEach
     void setUp() {
-        tarea1 = new Tarea(1L, HOGAR_ID, "Barrer", null, null,
+        tarea1 = new Tarea(1L, HOGAR_ID, null, "Barrer", null, null,
                 LocalDateTime.now().plusDays(3), DificultadTarea.BAJA, PrioridadTarea.MEDIA);
-        tarea2 = new Tarea(2L, HOGAR_ID, "Fregar", null, null,
+        tarea2 = new Tarea(2L, HOGAR_ID, null, "Fregar", null, null,
                 LocalDateTime.now().plusDays(4), DificultadTarea.ALTA, PrioridadTarea.ALTA);
     }
 

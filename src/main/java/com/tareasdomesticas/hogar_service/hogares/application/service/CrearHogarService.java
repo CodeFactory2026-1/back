@@ -21,18 +21,37 @@ public class CrearHogarService implements CrearHogarUseCase {
 
     @Override
     public CrearHogarResultDTO crearHogar(CrearHogarCommand command) {
-        validarComando(command);
 
+        // ── Responsabilidad exclusiva del servicio: verificar unicidad en repositorio.
+        // Las validaciones de nombre y correo del usuario las hace el constructor de
+        // Usuario
+        // dentro de Hogar — no se duplican aquí.
         hogarRepository.buscarPorCorreoUsuario(command.correoUsuario())
                 .ifPresent(h -> {
                     throw new IllegalStateException(
                             "Ya hace parte de un hogar, por lo que no puede crear otro hogar.");
                 });
 
-        // El id se deja null: la BD genera el BIGSERIAL automáticamente
-        Usuario creador = new Usuario(null, command.nombreUsuario(), command.correoUsuario());
-        Hogar hogar     = new Hogar(null, command.nombreHogar(), command.descripcion(), creador);
-        Hogar guardado  = hogarRepository.guardar(hogar);
+        // ── El constructor de Usuario valida: nombre no nulo/blank, longitud, correo
+        // no nulo.
+        // El constructor de Hogar valida: nombre 3-50 chars, descripción, creador no
+        // nulo,
+        // y llama a creador.convertirEnAdministrador().
+        // El servicio no repite ninguna de esas validaciones.
+        Usuario creador = new Usuario(
+                command.usuarioId(),
+                command.nombreUsuario(),
+                command.correoUsuario());
+
+        creador.convertirEnAdministrador();
+
+        Hogar hogar = new Hogar(
+                null,
+                command.nombreHogar(),
+                command.descripcion(),
+                creador);
+
+        Hogar guardado = hogarRepository.guardar(hogar);
 
         log.info("Hogar creado. ID={}, admin={}",
                 guardado.getIdHogar(),
@@ -43,12 +62,5 @@ public class CrearHogarService implements CrearHogarUseCase {
                 guardado.getNombreHogar(),
                 guardado.getDescripcionHogar(),
                 guardado.getAdministrador().getIdUsuario());
-    }
-
-    private void validarComando(CrearHogarCommand command) {
-        if (command.nombreUsuario() == null || command.nombreUsuario().isBlank())
-            throw new IllegalArgumentException("El nombre del usuario es requerido.");
-        if (command.correoUsuario() == null || command.correoUsuario().isBlank())
-            throw new IllegalArgumentException("El correo del usuario es requerido.");
     }
 }

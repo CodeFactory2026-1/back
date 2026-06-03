@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 
 public record EditarTareaCommand(
     Long idTarea,
+    Long idUsuarioAdmin,
     String nuevoNombre,
     String nuevaDescripcion,
     String nuevaDificultad,

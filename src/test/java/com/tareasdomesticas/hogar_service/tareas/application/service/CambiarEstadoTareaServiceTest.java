@@ -38,7 +38,7 @@ class CambiarEstadoTareaServiceTest {
     @BeforeEach
     void setUp() {
         tarea = new Tarea(
-                TAREA_ID, HOGAR_ID, "Barrer", "Desc", null,
+                TAREA_ID, HOGAR_ID, null, "Barrer", "Desc", null,
                 LocalDateTime.now().plusDays(5),
                 DificultadTarea.BAJA, PrioridadTarea.MEDIA);
         astAsignada = new AsignacionSemanalTarea(ASIGNACION_ID, TAREA_ID, USUARIO_ID);
@@ -51,7 +51,7 @@ class CambiarEstadoTareaServiceTest {
                 .thenReturn(Optional.of(astAsignada));
 
         TareaListadoDTO resp = service.cambiarEstado(
-                new CambiarEstadoCommand(TAREA_ID, "EN_PROCESO"));
+                new CambiarEstadoCommand(TAREA_ID, "EN_PROCESO", null));
 
         assertThat(resp.getEstado()).isEqualTo("EN_PROCESO");
         assertThat(resp.getUsuarioAsignado().getIdUsuario()).isEqualTo(USUARIO_ID);
@@ -68,7 +68,7 @@ class CambiarEstadoTareaServiceTest {
                 .thenReturn(Optional.of(enProceso));
 
         TareaListadoDTO resp = service.cambiarEstado(
-                new CambiarEstadoCommand(TAREA_ID, "FINALIZADO"));
+                new CambiarEstadoCommand(TAREA_ID, "FINALIZADO", null));
 
         assertThat(resp.getEstado()).isEqualTo("FINALIZADO");
     }
@@ -80,7 +80,7 @@ class CambiarEstadoTareaServiceTest {
                 .thenReturn(Optional.of(astAsignada));
 
         TareaListadoDTO resp = service.cambiarEstado(
-                new CambiarEstadoCommand(TAREA_ID, "PENDIENTE"));
+                new CambiarEstadoCommand(TAREA_ID, "PENDIENTE", null));
 
         assertThat(resp.getEstado()).isEqualTo("PENDIENTE");
         assertThat(resp.getUsuarioAsignado().getIdUsuario()).isNull();
@@ -91,7 +91,7 @@ class CambiarEstadoTareaServiceTest {
         when(tareaRepository.buscarPorId(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() ->
-                service.cambiarEstado(new CambiarEstadoCommand(99L, "EN_PROCESO"))
+                service.cambiarEstado(new CambiarEstadoCommand(99L, "EN_PROCESO", null))
         ).isInstanceOf(IllegalArgumentException.class)
          .hasMessageContaining("no existe");
 
@@ -105,7 +105,7 @@ class CambiarEstadoTareaServiceTest {
                 .thenReturn(Optional.empty());
 
         assertThatThrownBy(() ->
-                service.cambiarEstado(new CambiarEstadoCommand(TAREA_ID, "EN_PROCESO"))
+                service.cambiarEstado(new CambiarEstadoCommand(TAREA_ID, "EN_PROCESO", null))
         ).isInstanceOf(IllegalStateException.class)
          .hasMessageContaining("no tiene una asignación activa");
 
@@ -115,7 +115,7 @@ class CambiarEstadoTareaServiceTest {
     @Test
     void debeFallarSiEstadoEsInvalido() {
         assertThatThrownBy(() ->
-                service.cambiarEstado(new CambiarEstadoCommand(TAREA_ID, "ESTADO_FAKE"))
+                service.cambiarEstado(new CambiarEstadoCommand(TAREA_ID, "ESTADO_FAKE", null))
         ).isInstanceOf(IllegalArgumentException.class)
          .hasMessageContaining("Estado no válido");
     }
@@ -129,7 +129,7 @@ class CambiarEstadoTareaServiceTest {
                 .thenReturn(Optional.of(excedente));
 
         assertThatThrownBy(() ->
-                service.cambiarEstado(new CambiarEstadoCommand(TAREA_ID, "EN_PROCESO"))
+                service.cambiarEstado(new CambiarEstadoCommand(TAREA_ID, "EN_PROCESO", null))
         ).isInstanceOf(IllegalStateException.class)
          .hasMessageContaining("debe ser asignada");
     }
@@ -144,7 +144,7 @@ class CambiarEstadoTareaServiceTest {
                 .thenReturn(Optional.of(sinUsuario));
 
         assertThatThrownBy(() ->
-                service.cambiarEstado(new CambiarEstadoCommand(TAREA_ID, "ASIGNADO"))
+                service.cambiarEstado(new CambiarEstadoCommand(TAREA_ID, "ASIGNADO", null))
         ).isInstanceOf(IllegalStateException.class)
          .hasMessageContaining("no tiene un responsable asignado");
 
@@ -158,7 +158,7 @@ class CambiarEstadoTareaServiceTest {
                 .thenReturn(Optional.of(astAsignada));
 
         assertThatThrownBy(() ->
-                service.cambiarEstado(new CambiarEstadoCommand(TAREA_ID, "FINALIZADO"))
+                service.cambiarEstado(new CambiarEstadoCommand(TAREA_ID, "FINALIZADO", null))
         ).isInstanceOf(IllegalStateException.class)
          .hasMessageContaining("Transición no permitida");
     }
@@ -174,7 +174,7 @@ class CambiarEstadoTareaServiceTest {
                 .thenReturn(Optional.of(finalizada));
 
         assertThatThrownBy(() ->
-                service.cambiarEstado(new CambiarEstadoCommand(TAREA_ID, "PENDIENTE"))
+                service.cambiarEstado(new CambiarEstadoCommand(TAREA_ID, "PENDIENTE", null))
         ).isInstanceOf(IllegalStateException.class)
          .hasMessageContaining("Transición no permitida");
     }

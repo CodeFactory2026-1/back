@@ -107,4 +107,11 @@ public class JpaAsignacionSemanalRepositoryAdapter implements AsignacionSemanalR
                 .map(e -> e.getId().getIdTarea())
                 .toList();
     }
+
+    @Override
+    public java.util.List<com.tareasdomesticas.hogar_service.tareas.domain.model.AsignacionSemanalTarea> listarAsignacionesActivasPorHogar(Long idHogar) {
+        return asignacionTareaJpa.findActivasByHogar(idHogar).stream()
+                .map(AsignacionMapper::toDomain)
+                .toList();
+    }
 }

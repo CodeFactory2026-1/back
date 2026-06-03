@@ -1,16 +1,14 @@
 package com.tareasdomesticas.hogar_service.tareas.infrastructure.adapter.in.dto;
 
 import java.time.LocalDateTime;
-
-import jakarta.validation.constraints.Future;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 
 public class CrearTareaRequest {
 
     @NotNull(message = "El id del hogar es obligatorio")
     private Long idHogar;
+
+    private Long idUsuarioCreador;
 
     @NotBlank(message = "El nombre es obligatorio")
     private String nombre;
@@ -30,24 +28,67 @@ public class CrearTareaRequest {
     @NotBlank(message = "La prioridad es obligatoria")
     private String prioridad;
 
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
+    public Long getIdHogar() {
+        return idHogar;
+    }
 
-    public String getFoto() { return foto; }
-    public void setFoto(String foto) { this.foto = foto; }
+    public void setIdHogar(Long v) {
+        this.idHogar = v;
+    }
 
-    public String getDescripcion() { return descripcion; }
-    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+    public Long getIdUsuarioCreador() {
+        return idUsuarioCreador;
+    }
 
-    public LocalDateTime getFechaLimite() { return fechaLimite; }
-    public void setFechaLimite(LocalDateTime fechaLimite) { this.fechaLimite = fechaLimite; }
+    public void setIdUsuarioCreador(Long v) {
+        this.idUsuarioCreador = v;
+    }
 
-    public String getDificultad() { return dificultad; }
-    public void setDificultad(String dificultad) { this.dificultad = dificultad; }
+    public String getNombre() {
+        return nombre;
+    }
 
-    public String getPrioridad() { return prioridad; }
-    public void setPrioridad(String prioridad) { this.prioridad = prioridad; }
+    public void setNombre(String v) {
+        this.nombre = v;
+    }
 
-    public Long getIdHogar() {return idHogar; } 
-    public void setIdHogar(Long idHogar) { this.idHogar = idHogar; }
+    public String getFoto() {
+        return foto;
+    }
+
+    public void setFoto(String v) {
+        this.foto = v;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String v) {
+        this.descripcion = v;
+    }
+
+    public LocalDateTime getFechaLimite() {
+        return fechaLimite;
+    }
+
+    public void setFechaLimite(LocalDateTime v) {
+        this.fechaLimite = v;
+    }
+
+    public String getDificultad() {
+        return dificultad;
+    }
+
+    public void setDificultad(String v) {
+        this.dificultad = v;
+    }
+
+    public String getPrioridad() {
+        return prioridad;
+    }
+
+    public void setPrioridad(String v) {
+        this.prioridad = v;
+    }
 }

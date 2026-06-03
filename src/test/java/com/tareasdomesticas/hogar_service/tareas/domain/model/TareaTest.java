@@ -12,7 +12,7 @@ class TareaTest {
         return new Tarea(
                 1L,
                 1L,
-                "Barrer",
+                null, "Barrer",
                 "Limpiar sala",
                 "imagen.jpg",
                 LocalDateTime.now().plusDays(3),
@@ -35,7 +35,7 @@ class TareaTest {
     void debeFallarSiIdHogarEsNull() {
         assertThrows(IllegalArgumentException.class, () ->
                 new Tarea(
-                        1L, null, "Barrer", null, null,
+                        1L, null, null, "Barrer", null, null,
                         LocalDateTime.now().plusDays(1),
                         DificultadTarea.BAJA,
                         PrioridadTarea.MEDIA
@@ -48,7 +48,7 @@ class TareaTest {
         assertThrows(IllegalArgumentException.class, () ->
                 new Tarea(
                         1L, 1L, null, null, null,
-                        LocalDateTime.now().plusDays(1),
+                        null, LocalDateTime.now().plusDays(1),
                         DificultadTarea.BAJA,
                         PrioridadTarea.MEDIA
                 )
@@ -59,7 +59,7 @@ class TareaTest {
     void debeFallarSiNombreEsMuyCorto() {
         assertThrows(IllegalArgumentException.class, () ->
                 new Tarea(
-                        1L, 1L, "AB", null, null,
+                        1L, 1L, null, "AB", null, null,
                         LocalDateTime.now().plusDays(1),
                         DificultadTarea.BAJA,
                         PrioridadTarea.MEDIA
@@ -73,7 +73,7 @@ class TareaTest {
 
         assertThrows(IllegalArgumentException.class, () ->
                 new Tarea(
-                        1L, 1L, "Barrer", descripcion, null,
+                        1L, 1L, null, "Barrer", descripcion, null,
                         LocalDateTime.now().plusDays(1),
                         DificultadTarea.BAJA,
                         PrioridadTarea.MEDIA
@@ -85,7 +85,7 @@ class TareaTest {
     void debeFallarSiFechaEsPasada() {
         assertThrows(IllegalArgumentException.class, () ->
                 new Tarea(
-                        1L, 1L, "Barrer", null, null,
+                        1L, 1L, null, "Barrer", null, null,
                         LocalDateTime.now().minusDays(1),
                         DificultadTarea.BAJA,
                         PrioridadTarea.MEDIA
@@ -97,7 +97,7 @@ class TareaTest {
     void debeFallarSiDificultadEsNull() {
         assertThrows(IllegalArgumentException.class, () ->
                 new Tarea(
-                        1L, 1L, "Barrer", null, null,
+                        1L, 1L, null, "Barrer", null, null,
                         LocalDateTime.now().plusDays(1),
                         null,
                         PrioridadTarea.MEDIA
@@ -109,7 +109,7 @@ class TareaTest {
     void debeFallarSiPrioridadEsNull() {
         assertThrows(IllegalArgumentException.class, () ->
                 new Tarea(
-                        1L, 1L, "Barrer", null, null,
+                        1L, 1L, null, "Barrer", null, null,
                         LocalDateTime.now().plusDays(1),
                         DificultadTarea.BAJA,
                         null
@@ -121,7 +121,7 @@ class TareaTest {
     void debeFallarSiFormatoFotoNoEsJpg() {
         assertThrows(IllegalArgumentException.class, () ->
                 new Tarea(
-                        1L, 1L, "Barrer", null, "foto.png",
+                        1L, 1L, null, "Barrer", null, "foto.png",
                         LocalDateTime.now().plusDays(1),
                         DificultadTarea.BAJA,
                         PrioridadTarea.MEDIA

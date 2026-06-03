@@ -1,15 +1,18 @@
 package com.tareasdomesticas.hogar_service.hogares.infrastructure.adapter.in.dto;
 
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class EliminarMiembroRequest {
-    @NotNull(message = "El id del administrador es obligatorio")
     private Long idAdministrador;
-    @NotNull(message = "El id del miembro es obligatorio")
+
+    @NotNull(message = "El idMiembro es obligatorio.")
     private Long idMiembro;
 
-    public Long getIdAdministrador()       { return idAdministrador; }
-    public void setIdAdministrador(Long v) { this.idAdministrador = v; }
-    public Long getIdMiembro()             { return idMiembro; }
-    public void setIdMiembro(Long v)       { this.idMiembro = v; }
+    // Para construir el mensaje de la HU6: "Miembro eliminado. [nombre] fue
+    // eliminado del hogar."
+    private String nombreMiembro;
 }

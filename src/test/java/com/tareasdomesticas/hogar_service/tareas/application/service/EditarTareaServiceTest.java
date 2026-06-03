@@ -38,7 +38,7 @@ class EditarTareaServiceTest {
     void setUp() {
         fechaFutura = LocalDateTime.now().plusDays(5);
         tareaOriginal = new Tarea(
-                TAREA_ID, HOGAR_ID, "Barrer", "Descripcion original",
+                TAREA_ID, HOGAR_ID, null, "Barrer", "Descripcion original",
                 null, fechaFutura, DificultadTarea.BAJA, PrioridadTarea.MEDIA);
     }
 
@@ -50,7 +50,7 @@ class EditarTareaServiceTest {
         when(tareaRepository.actualizar(any())).thenReturn(tareaOriginal);
 
         TareaListadoDTO resp = service.editarTarea(new EditarTareaCommand(
-                TAREA_ID, "Trapear", "Nueva desc", "MEDIA", fechaFutura));
+                TAREA_ID, null, "Trapear", "Nueva desc", "MEDIA", fechaFutura));
 
         assertThat(resp.getNombre()).isEqualTo("Trapear");
         verify(tareaRepository).actualizar(any());
@@ -61,7 +61,7 @@ class EditarTareaServiceTest {
         when(tareaRepository.buscarPorId(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.editarTarea(
-                new EditarTareaCommand(99L, "Nombre", null, "BAJA", fechaFutura))
+                new EditarTareaCommand(99L, null, "Nombre", null, "BAJA", fechaFutura))
         ).isInstanceOf(IllegalArgumentException.class)
          .hasMessageContaining("no existe");
 
@@ -77,7 +77,7 @@ class EditarTareaServiceTest {
                 .thenReturn(Optional.of(ast));
 
         assertThatThrownBy(() -> service.editarTarea(
-                new EditarTareaCommand(TAREA_ID, "Nuevo", null, "ALTA", fechaFutura))
+                new EditarTareaCommand(TAREA_ID, null, "Nuevo", null, "ALTA", fechaFutura))
         ).isInstanceOf(IllegalStateException.class)
          .hasMessageContaining("asignada o en proceso");
 
@@ -94,7 +94,7 @@ class EditarTareaServiceTest {
                 .thenReturn(Optional.of(ast));
 
         assertThatThrownBy(() -> service.editarTarea(
-                new EditarTareaCommand(TAREA_ID, "Nuevo", null, "ALTA", fechaFutura))
+                new EditarTareaCommand(TAREA_ID, null, "Nuevo", null, "ALTA", fechaFutura))
         ).isInstanceOf(IllegalStateException.class)
          .hasMessageContaining("asignada o en proceso");
     }
@@ -102,7 +102,7 @@ class EditarTareaServiceTest {
     @Test
     void debeFallarSiDificultadEsNula() {
         assertThatThrownBy(() -> service.editarTarea(
-                new EditarTareaCommand(TAREA_ID, "Nombre", null, null, fechaFutura))
+                new EditarTareaCommand(TAREA_ID, null, "Nombre", null, null, fechaFutura))
         ).isInstanceOf(IllegalArgumentException.class)
          .hasMessageContaining("dificultad es obligatoria");
     }
@@ -110,7 +110,7 @@ class EditarTareaServiceTest {
     @Test
     void debeFallarSiDificultadEsInvalida() {
         assertThatThrownBy(() -> service.editarTarea(
-                new EditarTareaCommand(TAREA_ID, "Nombre", null, "SUPERALTA", fechaFutura))
+                new EditarTareaCommand(TAREA_ID, null, "Nombre", null, "SUPERALTA", fechaFutura))
         ).isInstanceOf(IllegalArgumentException.class)
          .hasMessageContaining("Dificultad no válida");
     }
@@ -122,7 +122,7 @@ class EditarTareaServiceTest {
                 .thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.editarTarea(
-                new EditarTareaCommand(TAREA_ID, "AB", null, "BAJA", fechaFutura))
+                new EditarTareaCommand(TAREA_ID, null, "AB", null, "BAJA", fechaFutura))
         ).isInstanceOf(IllegalArgumentException.class)
          .hasMessageContaining("caracteres");
     }
@@ -134,7 +134,7 @@ class EditarTareaServiceTest {
                 .thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.editarTarea(
-                new EditarTareaCommand(TAREA_ID, "Trapear", null,
+                new EditarTareaCommand(TAREA_ID, null, "Trapear", null,
                         "MEDIA", LocalDateTime.now().minusDays(1)))
         ).isInstanceOf(IllegalArgumentException.class)
          .hasMessageContaining("fecha límite");

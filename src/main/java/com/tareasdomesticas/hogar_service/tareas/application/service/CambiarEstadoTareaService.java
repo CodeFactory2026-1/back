@@ -1,5 +1,8 @@
 package com.tareasdomesticas.hogar_service.tareas.application.service;
 
+import com.tareasdomesticas.hogar_service.common.application.port.out.ResolverNombreUsuarioPort;
+import com.tareasdomesticas.hogar_service.historial.application.port.in.RegistrarAccionHistorialUseCase;
+import com.tareasdomesticas.hogar_service.historial.domain.model.TipoAccion;
 import com.tareasdomesticas.hogar_service.tareas.application.assembler.TareaListadoAssembler;
 import com.tareasdomesticas.hogar_service.tareas.application.dto.TareaListadoDTO;
 import com.tareasdomesticas.hogar_service.tareas.application.port.in.CambiarEstadoCommand;
@@ -11,11 +14,17 @@ public class CambiarEstadoTareaService implements CambiarEstadoTareaUseCase {
 
     private final TareaRepository tareaRepository;
     private final AsignacionSemanalRepository asignacionRepository;
+    private final RegistrarAccionHistorialUseCase historial;
+    private final ResolverNombreUsuarioPort resolverNombre;
 
     public CambiarEstadoTareaService(TareaRepository tareaRepository,
-                                     AsignacionSemanalRepository asignacionRepository) {
-        this.tareaRepository      = tareaRepository;
+            AsignacionSemanalRepository asignacionRepository,
+            RegistrarAccionHistorialUseCase historial,
+            ResolverNombreUsuarioPort resolverNombre) {
+        this.tareaRepository = tareaRepository;
         this.asignacionRepository = asignacionRepository;
+        this.historial = historial;
+        this.resolverNombre = resolverNombre;
     }
 
     @Override
@@ -37,6 +46,20 @@ public class CambiarEstadoTareaService implements CambiarEstadoTareaUseCase {
 
         ast.cambiarEstado(nuevoEstado);
         asignacionRepository.actualizarAsignacionTarea(ast);
+
+        // Actor = miembro asignado a la tarea (quien ejecuta el cambio de estado)
+        Long idMiembro = ast.getIdUsuarioAsignado() != null
+                ? ast.getIdUsuarioAsignado()
+                : tarea.getIdUsuarioCreador();
+        String nombreMiembro = resolverNombre.resolverNombre(idMiembro);
+
+        String detalleEstado = "Estado cambiado a " + nuevoEstado.name();
+        if (nuevoEstado == EstadoTarea.FINALIZADO) {
+            detalleEstado += " por " + nombreMiembro;
+        }
+        historial.registrar(tarea.getIdHogar(), tarea.getIdTarea(),
+                tarea.getNombreTarea(), TipoAccion.TAREA_ESTADO_CAMBIADO,
+                idMiembro, nombreMiembro, detalleEstado);
 
         return TareaListadoAssembler.toDTO(tarea, ast);
     }

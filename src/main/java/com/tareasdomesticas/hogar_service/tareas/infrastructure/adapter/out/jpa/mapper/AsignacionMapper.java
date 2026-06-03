@@ -1,6 +1,7 @@
 package com.tareasdomesticas.hogar_service.tareas.infrastructure.adapter.out.jpa.mapper;
 
-import com.tareasdomesticas.hogar_service.tareas.domain.model.*;
+import com.tareasdomesticas.hogar_service.tareas.domain.model.AsignacionSemanal;
+import com.tareasdomesticas.hogar_service.tareas.domain.model.AsignacionSemanalTarea;
 import com.tareasdomesticas.hogar_service.tareas.infrastructure.adapter.out.jpa.entity.*;
 
 public final class AsignacionMapper {
@@ -26,23 +27,27 @@ public final class AsignacionMapper {
                 e.getId().getIdTarea(),
                 e.getIdUsuarioAsignado(),
                 e.getEstadoTarea(),
-                e.isExcedente());
+                e.isExcedente(),
+                e.getIdUsuarioFinalizador(),
+                e.getFechaUltimoCambioEstado());
     }
 
     public static AsignacionSemanalTareaEntity toEntity(
             AsignacionSemanalTarea ast, AsignacionSemanalEntity asignacionEntity) {
-        AsignacionSemanalTareaId id = new AsignacionSemanalTareaId(ast.getIdAsignacion(), ast.getIdTarea());
-        EstadoTarea estadoFinal = ast.getEstado();
-        if (ast.getIdUsuarioAsignado() == null
-                && estadoFinal != EstadoTarea.FINALIZADO) {
-            estadoFinal = EstadoTarea.PENDIENTE;
-        }
+        // El mapper no toma decisiones de negocio sobre el estado.
+        // La regla "sin usuario → PENDIENTE" ya la aplica
+        // AsignacionSemanalTarea.liberarResponsable()
+        // antes de llegar aquí. El mapper solo convierte lo que el dominio ya decidió.
+        AsignacionSemanalTareaId id = new AsignacionSemanalTareaId(
+                ast.getIdAsignacion(), ast.getIdTarea());
         return AsignacionSemanalTareaEntity.builder()
                 .id(id)
                 .asignacion(asignacionEntity)
                 .idUsuarioAsignado(ast.getIdUsuarioAsignado())
                 .estadoTarea(ast.getEstado())
                 .excedente(ast.isExcedente())
+                .idUsuarioFinalizador(ast.getIdUsuarioFinalizador())
+                .fechaUltimoCambioEstado(ast.getFechaUltimoCambioEstado())
                 .build();
     }
 }

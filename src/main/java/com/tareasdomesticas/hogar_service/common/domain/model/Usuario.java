@@ -27,7 +27,6 @@ public class Usuario {
 
     public void asignarHogar(Long idHogar) { this.idHogar = idHogar; }
 
-    // ── Getters ───────────────────────────────────────────────────────────
     public Long   getIdUsuario()      { return idUsuario; }
     public String getNombreUsuario()  { return nombreUsuario; }
     public String getCorreoUsuario()  { return correoUsuario; }

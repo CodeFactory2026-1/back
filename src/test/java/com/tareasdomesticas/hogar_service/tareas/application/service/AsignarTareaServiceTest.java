@@ -37,6 +37,7 @@ class AsignarTareaServiceTest {
         return new Tarea(
                 id,
                 HOGAR_ID,
+                id, 
                 nombre,
                 null,
                 null,
